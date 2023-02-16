@@ -1,11 +1,13 @@
 package com.king;
 
 import com.king.application.*;
+import com.king.application.Resolver.*;
 import org.junit.jupiter.api.*;
 
 import java.util.*;
-import java.util.function.*;
 
+import static com.king.application.Resolver.METHOD.GET;
+import static com.king.application.Resolver.METHOD.POST;
 import static com.king.application.Resolver.equivalent;
 import static com.king.application.Resolver.extract;
 import static java.util.Map.of;
@@ -42,27 +44,27 @@ class ResolverTest {
         assertEquals(of(), extract("/a/b/c", "/a/b/c"));
     }
 
-    private Map<String, Function<Map<String, String>, String>> mapping =
-            of(
-                    "/home/<name>", (request) -> String.format("Welcome home %s!!!", request.get("name")),
-                    "/exception", (request) -> { throw new RuntimeException(); }
+    private List<Resolve> resolves =
+            List.of(
+                    new Resolve(GET, "/home/<name>", request -> String.format("Welcome home %s!!!", request.get("name"))),
+                    new Resolve(GET, "/exception", request -> { throw new RuntimeException(); })
             );
 
     @Test
     void shouldProvideTheHandlerAssociated() {
-        assertEquals("Welcome home Homer!!!", new Resolver(mapping).of("/home/Homer").get());
-        assertEquals("Welcome home Bart!!!", new Resolver(mapping).of("/home/Bart").get());
+        assertEquals("Welcome home Homer!!!", new Resolver(resolves).of(GET, "/home/Homer").get());
+        assertEquals("Welcome home Bart!!!", new Resolver(resolves).of(GET, "/home/Bart").get());
     }
 
     @Test
     void shouldThrowIfTheHandlerNotAssociated() {
-        var dispatcher = new Resolver(mapping);
-        assertThrows(NotFoundException.class, () -> dispatcher.of("/index"));
+        assertThrows(NotFoundException.class, () -> new Resolver(resolves).of(GET, "/index"));
+        assertThrows(NotFoundException.class, () -> new Resolver(resolves).of(POST, "/home/Homer"));
     }
 
     @Test
     void shouldPropagateException() {
-        var handler = new Resolver(mapping).of("/exception");
+        var handler = new Resolver(resolves).of(GET, "/exception");
         assertThrows(RuntimeException.class, handler::get);
     }
 }

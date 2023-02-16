@@ -12,10 +12,10 @@ import static java.util.regex.Pattern.compile;
  */
 public class Resolver {
 
-    private Map<String, Function<Map<String, String>, String>> mapping;
+    private List<Resolve> resolves;
 
-    public Resolver(Map<String, Function<Map<String, String>, String>> mapping) {
-        this.mapping = mapping;
+    public Resolver(List<Resolve> resolves) {
+        this.resolves = resolves;
     }
 
     /**
@@ -55,15 +55,17 @@ public class Resolver {
      * @param path Full path to be match against a template
      * @return Supplier that lazily evaluate the handler with its request when needed or NotFoundException
      */
-    public Supplier<String> of(String path) {
-        var template = mapping.keySet()
+
+    public Supplier<String> of(METHOD method, String path) {
+        var found = this
+                .resolves
                 .stream()
-                .filter(res -> equivalent(res, path))
+                .filter(res -> equivalent(res.path, path) && res.method.equals(method))
                 .findFirst()
                 .orElseThrow(NotFoundException::new);
-        var handler = mapping.get(template);
-        var params = extract(template, path);
-        return () -> handler.apply(params);
+
+        var params = extract(found.path, path);
+        return () -> found.handler.apply(params);
     }
 
     private static String sanitize(String template) {
@@ -78,4 +80,9 @@ public class Resolver {
                 "$";
     }
 
+    public record Resolve(METHOD method, String path, Function<Map<String, String>, String> handler){}
+    public enum METHOD {
+        GET,
+        POST
+    }
 }

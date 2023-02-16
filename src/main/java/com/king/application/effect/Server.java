@@ -1,6 +1,7 @@
 package com.king.application.effect;
 
 import com.king.application.*;
+import com.king.application.Resolver.*;
 import com.sun.net.httpserver.*;
 
 import java.io.*;
@@ -29,7 +30,9 @@ public class Server {
     public void start() {
         this.http.createContext("/", exchange ->
                 dispatcher
-                        .schedule(exchange.getRequestURI().getPath())
+                        .schedule(
+                                METHOD.valueOf(exchange.getRequestMethod().toUpperCase()),
+                                exchange.getRequestURI().getPath())
                         .thenAccept(result -> {
                             try {
                                 evaluate(exchange, result);
