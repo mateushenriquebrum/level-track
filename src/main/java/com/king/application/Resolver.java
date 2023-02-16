@@ -1,11 +1,15 @@
 package com.king.application;
 
-import java.lang.ref.*;
 import java.util.*;
 import java.util.function.*;
 
 import static java.util.regex.Pattern.compile;
 
+/**
+ * Resolver is responsible to identify a path and match with some registered template
+ * Also it supply the correspondent handler with parameters extracted from the URL
+ * It has no side effect
+ */
 public class Resolver {
 
     private Map<String, Function<Map<String, String>, String>> mapping;
@@ -46,6 +50,11 @@ public class Resolver {
         return params;
     }
 
+    /**
+     * Get the handler associated with a URL as long as its parameters
+     * @param path Full path to be match against a template
+     * @return Supplier that lazily evaluate the handler with its request when needed or NotFoundException
+     */
     public Supplier<String> of(String path) {
         var template = mapping.keySet()
                 .stream()
@@ -65,7 +74,7 @@ public class Resolver {
         return  "^" +
                 template
                         .replace("/", "\\/")
-                        .replaceAll("<.+?>", "([\\\\d\\\\w]*)") +
+                        .replaceAll("<\\w+?>", "([\\\\d\\\\w]*)") +
                 "$";
     }
 
