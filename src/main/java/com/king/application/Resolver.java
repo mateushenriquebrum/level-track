@@ -85,4 +85,6 @@ public class Resolver {
         GET,
         POST
     }
+    public class NotFoundException extends RuntimeException {}
+
 }
