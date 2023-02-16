@@ -1,7 +1,7 @@
 Web Micro-Framework:
 ----------------------------------------------------------
 | EFFECT |                 PURE                |  EFFECT |
-| TCP/IP -> DISPATCHER -> EXECUTOR -> HANDLER -> TCP/IP  |
+| SERVER -> RESOURCE -> DISPATCHER -> HANDLER -> SERVERs  |
 ----------------------------------------------------------
 
 DISPATCHER:
