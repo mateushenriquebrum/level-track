@@ -1,12 +1,11 @@
 package com.king.domain;
 
-import com.king.*;
-
 public class LevelService {
+    private LoginService login;
     private Repository repository;
 
-    public LevelService(Repository repository) {
-
+    public LevelService(LoginService login, Repository repository) {
+        this.login = login;
         this.repository = repository;
     }
 

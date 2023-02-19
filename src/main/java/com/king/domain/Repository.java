@@ -1,4 +1,4 @@
-package com.king;
+package com.king.domain;
 
 public interface Repository {
 }
