@@ -7,8 +7,10 @@ import com.sun.net.httpserver.*;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.*;
+import java.util.logging.*;
 
 import static com.sun.net.httpserver.HttpServer.create;
+import static java.lang.String.format;
 
 /**
  * Wrap around the HttpServer with a configurable resolver and a thread based request
@@ -30,7 +32,9 @@ public class Server {
      * the correct handler using dispatcher all together with the resolver
      */
     public void start() {
+        logger.finest("Defining dispatcher and selector");
         this.http.createContext("/", exchange -> {
+            logger.info(format("URL:%s", exchange.getRequestURI().getRawPath()));
             var handler = selector.of(
                     METHOD.valueOf(exchange.getRequestMethod().toUpperCase()),
                     exchange.getRequestURI().getPath());
@@ -41,18 +45,21 @@ public class Server {
                         try {
                             evaluate(exchange, result);
                         } catch (Exception e) {
-                            e.printStackTrace();
-                            //general exception have occurred
+                            logger.severe(e.getMessage());
                             System.exit(1);
                         }
                     });
         });
         http.setExecutor(null);
         this.http.start();
+        logger.info(format("Server started on : %s", http.getAddress()));
+
     }
 
     private Params extract(HttpExchange exchange) throws IOException {
         var params = selector.params(exchange.getRequestURI().getPath());
+        var body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.US_ASCII);
+        if (!body.isBlank()) params.put("body", body);
         params.put("body", new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.US_ASCII));
         params.putAll(new Query(exchange.getRequestURI().getQuery()).params());
         return new Params(params);
@@ -74,4 +81,7 @@ public class Server {
         response.write(content);
         response.close();
     }
+
+    private Logger logger = Logger.getLogger(this.getClass().getCanonicalName());
+
 }

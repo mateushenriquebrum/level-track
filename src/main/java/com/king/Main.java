@@ -7,6 +7,7 @@ import com.king.domain.*;
 
 import java.io.*;
 import java.util.*;
+import java.util.logging.*;
 
 import static com.king.application.Selector.METHOD.GET;
 import static com.king.application.Selector.METHOD.POST;
@@ -24,6 +25,8 @@ public class Main {
     );
 
     public static void main(String[] args) throws IOException {
+        var logger = Logger.getGlobal();
+        logger.addHandler(new ConsoleHandler());
         var port = args.length == 1 ? Integer.parseInt(args[0]) : 8080;
         var server = new Server(port, new Dispatcher(), new Selector(mapping));
         server.start();

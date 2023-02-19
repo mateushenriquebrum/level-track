@@ -3,7 +3,9 @@ package com.king.application;
 
 import java.util.concurrent.*;
 import java.util.function.*;
+import java.util.logging.*;
 
+import static java.lang.String.format;
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 import static java.util.concurrent.Executors.newCachedThreadPool;
 
@@ -15,6 +17,9 @@ public class Dispatcher {
     private ExecutorService service = newCachedThreadPool();
 
     public CompletableFuture<String> schedule(Function<Params, String> handler, Params params) {
+        logger.info(format("Scheduling handler with params %s", params));
         return supplyAsync(() -> handler.apply(params), service);
     }
+
+    private Logger logger = Logger.getLogger(this.getClass().getPackageName());
 }
