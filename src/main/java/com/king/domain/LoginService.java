@@ -2,19 +2,19 @@ package com.king.domain;
 
 public class LoginService {
     private Repository repository;
-    private Token token;
+    private TokenService tokenService;
 
-    public LoginService(Repository repository, Token token) {
+    public LoginService(Repository repository, TokenService tokenService) {
         this.repository = repository;
-        this.token = token;
+        this.tokenService = tokenService;
     }
 
     public String session(Integer id) {
-        return token.generate(id);
+        return tokenService.generate(id);
     }
 
     public Boolean verify(String raw)
     {
-        return token.valid(raw);
+        return tokenService.valid(raw);
     }
 }

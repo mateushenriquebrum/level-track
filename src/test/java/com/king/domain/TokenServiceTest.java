@@ -8,7 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-class TokenTest {
+class TokenServiceTest {
 
     private Encryptor DO_NOTHING = new Encryptor() {
 
@@ -23,9 +23,16 @@ class TokenTest {
         }
     };
 
+    private Repository HAPPY_PATH = new Repository() {
+        @Override
+        public boolean exists(int id) {
+            return true;
+        }
+    };
+
     @Test
     void shouldGenerateTokenWithExpiringTime() {
-        var parts = new Token(DO_NOTHING).generate(123).split("::");
+        var parts = new TokenService(DO_NOTHING, HAPPY_PATH).generate(123).split("::");
         var id = parseInt(parts[0]);
         var expire = parse(parts[1]);
         assertEquals(123, id);
@@ -34,7 +41,7 @@ class TokenTest {
 
     @Test
     void shouldValidatedBasedOnTime() {
-        var token = new Token(DO_NOTHING);
+        var token = new TokenService(DO_NOTHING, HAPPY_PATH);
         var generated = token.generate(123);
         assertTrue(token.valid(generated));
     }

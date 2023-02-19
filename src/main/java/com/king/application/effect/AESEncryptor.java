@@ -1,4 +1,6 @@
-package com.king.domain;
+package com.king.application.effect;
+
+import com.king.domain.*;
 
 import javax.crypto.*;
 import static java.nio.charset.StandardCharsets.*;
@@ -8,7 +10,7 @@ import static javax.crypto.Cipher.DECRYPT_MODE;
 import static javax.crypto.Cipher.ENCRYPT_MODE;
 import static javax.crypto.KeyGenerator.getInstance;
 
-public class AESEncryptor implements Encryptor{
+public class AESEncryptor implements Encryptor {
 
     private SecretKey key;
 
