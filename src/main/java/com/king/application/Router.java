@@ -9,7 +9,7 @@ import java.util.function.*;
  * Also it supply the correspondent handler with parameters extracted from the URL
  * It has no side effect
  */
-public record Selector(List<Select> selects) {
+public record Router(List<Route> routes) {
 
     /**
      * Get the handler associated with a URL as long as its parameters
@@ -20,7 +20,7 @@ public record Selector(List<Select> selects) {
 
     public Function<Params, String> of(METHOD method, String sample) {
         var found = this
-                .selects
+                .routes
                 .stream()
                 .filter(res -> res.template.equivalent(sample) && res.method.equals(method))
                 .findFirst()
@@ -31,15 +31,15 @@ public record Selector(List<Select> selects) {
 
     public Map<String, String> params(String sample) {
         return this
-                .selects
+                .routes
                 .stream()
                 .filter(res -> res.template.equivalent(sample))
                 .findFirst()
-                .map(select -> select.template().params(sample))
+                .map(route -> route.template().params(sample))
                 .orElse(Map.of());
     }
 
-    public record Select(METHOD method, Template template, Function<Params, String> handler){}
+    public record Route(METHOD method, Template template, Function<Params, String> handler){}
     public enum METHOD {
         GET,
         POST

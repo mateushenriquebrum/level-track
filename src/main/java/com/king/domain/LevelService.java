@@ -1,19 +1,23 @@
 package com.king.domain;
 
 public class LevelService {
-    private LoginService login;
     private Repository repository;
 
-    public LevelService(LoginService login, Repository repository) {
-        this.login = login;
+    public LevelService(Repository repository) {
         this.repository = repository;
     }
 
-    public String scores(String level) {
-        return null;
+    public String scores(Integer level) {
+        var csv = repository
+                .scoresOf(level)
+                .stream()
+                .map(us -> us.user()+"="+us.score())
+                .toList();
+        return String.join(",", csv);
     }
 
-    public String score(String level, String score) {
-        return null;
+    public String score(Integer level, UserScore userScore) {
+        repository.scoreTo(level, userScore);
+        return "";
     }
 }

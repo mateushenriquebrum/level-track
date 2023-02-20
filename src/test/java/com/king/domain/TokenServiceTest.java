@@ -23,16 +23,9 @@ class TokenServiceTest {
         }
     };
 
-    private Repository HAPPY_PATH = new Repository() {
-        @Override
-        public boolean exists(int id) {
-            return true;
-        }
-    };
-
     @Test
     void shouldGenerateTokenWithExpiringTime() {
-        var parts = new TokenService(DO_NOTHING, HAPPY_PATH).generate(123).split("::");
+        var parts = new TokenService(DO_NOTHING).generate(123).split("::");
         var id = parseInt(parts[0]);
         var expire = parse(parts[1]);
         assertEquals(123, id);
@@ -41,7 +34,7 @@ class TokenServiceTest {
 
     @Test
     void shouldValidatedBasedOnTime() {
-        var token = new TokenService(DO_NOTHING, HAPPY_PATH);
+        var token = new TokenService(DO_NOTHING);
         var generated = token.generate(123);
         assertTrue(token.valid(generated));
     }

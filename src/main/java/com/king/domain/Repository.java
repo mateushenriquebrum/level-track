@@ -1,5 +1,9 @@
 package com.king.domain;
 
+import java.util.*;
+
 public interface Repository {
-    boolean exists(int id);
+    void scoreTo(Integer level, UserScore userScore);
+
+    List<UserScore> scoresOf(Integer level);
 }

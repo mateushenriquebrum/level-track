@@ -1,27 +1,30 @@
 package com.king.domain;
 
+import static java.lang.Integer.parseInt;
 import static java.time.LocalDateTime.*;
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
 public class TokenService {
-    private Encryptor enc;
-    private Repository repository;
+    private Encryptor encryptor;
 
-    public TokenService(Encryptor enc, Repository repository) {
-        this.enc = enc;
-        this.repository = repository;
+    public TokenService(Encryptor encryptor) {
+        this.encryptor = encryptor;
     }
 
     public String generate(Integer id) {
         var expire = now().plusMinutes(10);
         var token = id+"::"+expire.format(ISO_LOCAL_DATE_TIME);
-        return enc.enc(token);
+        return encryptor.enc(token);
     }
 
     public Boolean valid(String token) {
-        var raw = enc.dec(token).split("::");
+        var raw = encryptor.dec(token).split("::");
         var expire = parse(raw[1], ISO_LOCAL_DATE_TIME);
-        var id = Integer.parseInt(raw[0]);
-        return expire.isBefore(now().plusMinutes(10)) && repository.exists(id);
+        return expire.isBefore(now().plusMinutes(10));
+    }
+
+    public Integer user(String token) {
+        var raw = encryptor.dec(token).split("::");
+        return parseInt(raw[0]);
     }
 }

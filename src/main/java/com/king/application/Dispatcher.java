@@ -17,7 +17,6 @@ public class Dispatcher {
     private ExecutorService service = newCachedThreadPool();
 
     public CompletableFuture<String> schedule(Function<Params, String> handler, Params params) {
-        logger.info(format("Scheduling handler with params %s", params));
         return supplyAsync(() -> handler.apply(params), service);
     }
 
