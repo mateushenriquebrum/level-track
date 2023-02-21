@@ -2,6 +2,9 @@ package com.king.application;
 
 import java.util.*;
 import java.util.function.*;
+import java.util.logging.*;
+
+import static java.lang.String.format;
 
 
 /**
@@ -18,18 +21,21 @@ public record Router(List<Route> routes) {
      * @return Supplier that lazily evaluate the handler with its request when needed or NotFoundException
      */
 
-    public Function<Params, String> of(METHOD method, String sample) {
+    public Function<Params, String> handlerOf(METHOD method, String sample) {
         var found = this
                 .routes
                 .stream()
                 .filter(res -> res.template.equivalent(sample) && res.method.equals(method))
                 .findFirst()
-                .orElseThrow(NotFoundException::new);
-
+                .orElseThrow(() -> {
+                    logger.warning(format("Handle not found for method: %s and url: %s", method, sample));
+                    return new NotFoundException();
+                });
+        logger.info(format("Handle for method: %s and url: %s", method, sample));
         return found.handler;
     }
 
-    public Map<String, String> params(String sample) {
+    public Map<String, String> paramsOf(String sample) {
         return this
                 .routes
                 .stream()
@@ -44,7 +50,7 @@ public record Router(List<Route> routes) {
         GET,
         POST
     }
-    //OPTIONAL and remove it
     public class NotFoundException extends RuntimeException {}
+    private static Logger logger = Logger.getLogger(Router.class.getPackageName());
 
 }

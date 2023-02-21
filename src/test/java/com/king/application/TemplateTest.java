@@ -1,6 +1,5 @@
 package com.king.application;
 
-import com.king.application.*;
 import org.junit.jupiter.api.*;
 
 

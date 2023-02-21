@@ -10,6 +10,7 @@ import java.util.logging.*;
 
 import static com.king.application.Router.METHOD.GET;
 import static com.king.application.Router.METHOD.POST;
+import static java.lang.String.format;
 import static java.util.List.of;
 
 public class Main {
@@ -24,6 +25,7 @@ public class Main {
     public static void main(String[] args) throws IOException {
         var logger = Logger.getGlobal();
         logger.addHandler(new ConsoleHandler());
+        routes.forEach(route -> logger.info(format("Router added %s", route)));
         var port = args.length == 1 ? Integer.parseInt(args[0]) : 8080;
         var server = new Server(port, new Dispatcher(), new Router(routes));
         server.start();

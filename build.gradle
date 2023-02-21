@@ -14,6 +14,13 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
 }
 
+task start(type: Exec) {
+    dependsOn jar
+    group = "Execution"
+    description = "Run the mainClass from the output jar in classpath with ExecTask"
+    commandLine "java", "-classpath", jar.archiveFile.get(), "com.king.Main"
+}
+
 test {
     useJUnitPlatform()
 }

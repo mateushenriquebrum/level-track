@@ -11,7 +11,7 @@ public record Params(Map<String, String> mapping) {
             var val = Integer.parseInt(this.mapping.get(key));
             return Optional.of(val);
         } catch (Exception e) {
-            logger.info(format("Impossible to parse param $d", key));
+            logger.info(format("Impossible to parse param $s", key));
             return Optional.empty();
         }
     }

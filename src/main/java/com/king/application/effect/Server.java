@@ -7,6 +7,8 @@ import com.sun.net.httpserver.*;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.*;
+import java.util.concurrent.*;
+import java.util.function.*;
 import java.util.logging.*;
 
 import static com.sun.net.httpserver.HttpServer.create;
@@ -34,19 +36,49 @@ public class Server {
     public void start() {
         logger.finest("Defining dispatcher and selector");
         this.http.createContext("/", exchange -> {
-            logger.info(format("URL:%s", exchange.getRequestURI().getRawPath()));
-            var handler = router.of(
-                    METHOD.valueOf(exchange.getRequestMethod().toUpperCase()),
-                    exchange.getRequestURI().getPath());
-            var params = extract(exchange);
+            logger.info(format("Requested :%s", exchange.getRequestURI().getRawPath()));
+            Function<Params, String> handler;
+            Params params;
+            try {
+                handler = router.handlerOf(
+                        METHOD.valueOf(exchange.getRequestMethod().toUpperCase()),
+                        exchange.getRequestURI().getPath());
+                params = extract(exchange);
+            } catch (NotFoundException n) {
+                var content = "Not Found".getBytes(StandardCharsets.US_ASCII);
+                exchange.sendResponseHeaders(404, content.length);
+                var response = exchange.getResponseBody();
+                response.write(content);
+                response.close();
+                return;
+            }
+
             dispatcher
                     .schedule(handler, params)
                     .thenAccept(result -> {
                         try {
-                            evaluate(exchange, result);
+                            var content = result == null ? new byte[]{} : result.getBytes(StandardCharsets.US_ASCII);
+                            exchange.sendResponseHeaders(200, content.length);
+                            var response = exchange.getResponseBody();
+                            response.write(content);
+                            response.close();
                         } catch (Exception e) {
                             logger.severe(e.getMessage());
                             System.exit(1);
+                        }
+                    })
+                    .whenComplete((res, exp) -> {
+                        if (exp != null) {
+                            try {
+                                var content = "Something went wrong".getBytes(StandardCharsets.US_ASCII);
+                                exchange.sendResponseHeaders(500, content.length);
+                                var response = exchange.getResponseBody();
+                                response.write(content);
+                                response.close();
+                            } catch (Exception e) {
+                                logger.severe(e.getMessage());
+                                System.exit(1);
+                            }
                         }
                     });
         });
@@ -57,28 +89,11 @@ public class Server {
     }
 
     private Params extract(HttpExchange exchange) throws IOException {
-        var params = router.params(exchange.getRequestURI().getPath());
+        var params = router.paramsOf(exchange.getRequestURI().getPath());
         var body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.US_ASCII);
         if (!body.isBlank()) params.put("body", body);
         params.putAll(new Query(exchange.getRequestURI().getQuery()).params());
         return new Params(params);
-    }
-
-    private void evaluate(HttpExchange exchange, String result) throws IOException {
-        byte[] content;
-        var response = exchange.getResponseBody();
-        try {
-            content = result == null ? new byte[]{} : result.getBytes(StandardCharsets.US_ASCII);
-            exchange.sendResponseHeaders(200, content.length);
-        } catch (NotFoundException n) {
-            content = "Not Found".getBytes(StandardCharsets.US_ASCII);
-            exchange.sendResponseHeaders(404, content.length);
-        } catch (Exception e) {
-            content = "Something went wrong".getBytes(StandardCharsets.US_ASCII);
-            exchange.sendResponseHeaders(500, content.length);
-        }
-        response.write(content);
-        response.close();
     }
 
     private Logger logger = Logger.getLogger(this.getClass().getCanonicalName());

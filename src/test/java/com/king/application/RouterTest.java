@@ -15,25 +15,33 @@ class RouterTest {
 
     private final Params NOTHING = new Params(of());
 
-    private List<Route> selections =
+    private List<Route> routes =
             List.of(
                     new Route(GET, new Template("/home/<name>"), request -> "Welcome home !!!"),
                     new Route(POST, new Template("/exception"), request -> { throw new RuntimeException(); })
             );
 
+    private Router router = new Router(routes);
+
     @Test
     void shouldProvideTheHandlerAssociated() {
-        assertEquals("Welcome home !!!", new Router(selections).of(GET, "/home/user").apply(NOTHING));
+        assertEquals("Welcome home !!!", router.handlerOf(GET, "/home/user").apply(NOTHING));
     }
 
     @Test
     void shouldThrowIfTheHandlerNotAssociated() {
-        assertThrows(NotFoundException.class, () -> new Router(selections).of(POST, "/home/user"));
-        assertThrows(NotFoundException.class, () -> new Router(selections).of(POST, "/index"));
+        assertThrows(NotFoundException.class, () -> router.handlerOf(POST, "/home/user"));
+        assertThrows(NotFoundException.class, () -> router.handlerOf(POST, "/index"));
     }
 
     @Test
     void shouldPropagateException() {
-        assertThrows(RuntimeException.class, () -> new Router(selections).of(GET, "/exception").apply(NOTHING));
+        assertThrows(RuntimeException.class, () -> router.handlerOf(GET, "/exception").apply(NOTHING));
+    }
+
+    @Test
+    void shouldExtractParams() {
+        assertEquals(of("name", "Carl"), router.paramsOf("/home/Carl"));
+        assertEquals(of(), router.paramsOf("/index"));
     }
 }

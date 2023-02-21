@@ -4,6 +4,8 @@ import com.king.domain.*;
 
 import java.util.*;
 
+import static java.util.Set.of;
+
 public class MemoryRepository implements Repository {
 
     private Map<Integer, Set<UserScore>> userScoreByLevel = new HashMap<>();
@@ -17,7 +19,7 @@ public class MemoryRepository implements Repository {
     @Override
     public List<UserScore> scoresOf(Integer level) {
         return userScoreByLevel
-                .get(level)
+                .getOrDefault(level, of())
                 .stream()
                 .map(UserDistinction::new)
                 .distinct()
